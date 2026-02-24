@@ -1,42 +1,36 @@
-n = int(input("Enter number of nodes: "))
-tree = [[] for _ in range(n)]
-values = [None] * n
-
-print("Enter edges (parent child), 0-indexed. Enter -1 -1 to stop:")
-while True:
-    u, v = map(int, input().split())
-    if u == -1 and v == -1:
-        break
-    tree[u].append(v)
-
-print("Enter leaf node values (node_index value). Enter -1 -1 to stop:")
-while True:
-    u, val = map(int, input().split())
-    if u == -1 and val == -1:
-        break
-    values[u] = val
-
-def alpha_beta(node, maximizing, alpha, beta):
-    if values[node] is not None:
+def alphabeta(depth, node, isMax, values, alpha, beta):
+    if depth == max_depth:
         return values[node]
-    if maximizing:
-        max_eval = -float('inf')
-        for child in tree[node]:
-            eval = alpha_beta(child, False, alpha, beta)
-            max_eval = max(max_eval, eval)
-            alpha = max(alpha, eval)
-            if beta <= alpha:
-                break
-        return max_eval
-    else:
-        min_eval = float('inf')
-        for child in tree[node]:
-            eval = alpha_beta(child, True, alpha, beta)
-            min_eval = min(min_eval, eval)
-            beta = min(beta, eval)
-            if beta <= alpha:
-                break
-        return min_eval
 
-best_value = alpha_beta(0, True, -float('inf'), float('inf'))
-print("Best value for root:", best_value)
+    if isMax:
+        best = -1000
+        for i in range(2):
+            val = alphabeta(depth+1, node*2+i, False, values, alpha, beta)
+            best = max(best, val)
+            alpha = max(alpha, best)
+
+            if beta <= alpha:   
+                break
+        return best
+    else:
+        best = 1000
+        for i in range(2):
+            val = alphabeta(depth+1, node*2+i, True, values, alpha, beta)
+            best = min(best, val)
+            beta = min(beta, best)
+
+            if beta <= alpha:   
+                break
+        return best
+
+max_depth = int(input("Enter tree depth (e.g., 3): "))
+
+leaf_nodes = 2 ** max_depth
+values = []
+
+print("Enter values for leaf nodes:")
+for i in range(leaf_nodes):
+    values.append(int(input(f"Value {i}: ")))
+
+result = alphabeta(0, 0, True, values, -1000, 1000)
+print("\nOptimal value:", result)
